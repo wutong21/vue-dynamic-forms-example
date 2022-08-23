@@ -1,105 +1,90 @@
-<script setup lang="ts">
-import { useI18n } from 'vue-i18n';
+<script lang="ts">
+import { defineComponent, reactive } from 'vue';
+import {
+  TextField,
+  EmailField,
+  PasswordField,
+  CheckboxField,
+  pattern,
+  Validator,
+  required,
+  email,
+} from '@asigloo/vue-dynamic-forms';
 
-import {  ref } from 'vue';
-import { useTheme } from '/@/composables';
+export default defineComponent({
+  name: 'Home',
+  setup() {
+    const formValues = reactive({});
+    const form = reactive({
+      id: 'example-id',
+      fields: {
+        username: TextField({
+          label: 'Username',
+          value: '',
+        }),
+        email: EmailField({
+          label: 'Email',
+          validations: [
+            Validator({ validator: required, text: 'This field is required' }),
+            Validator({
+              validator: email,
+              text: 'Format of email is incorrect',
+            }),
+          ],
+        }),
+        passoword: PasswordField({
+          label: 'Passoword',
+          Validations: [
+            Validator({ validator: required, text: 'This field is required' }),
+            Validator({
+              validator: pattern(
+                '^(?=.*[a-z])(?=.*[A-Z])(?=.*)(?=.*[#$^+=!*()@%&]).{8,10}$',
+              ),
+              text: 'Password must contain at least 1 Uppercase, 1 Lowercase, 1 number, 1 special character and min 8 characters max 10',
+            }),
+          ],
+        }),
+        remember: CheckboxField({
+          label: 'Remember me',
+        }),
+        condition: CheckboxField({
+          label: 'I agree with the terms and conditions',
+          condition: 'remember',
+        }),
+      },
+    });
 
+    function onFormChange(values: any) {
+      Object.assign(formValues, values);
+    }
+    function onFormSubmit(values: any) {
+      console.log('Form submitted!', values);
+    }
 
-const { t, availableLocales, locale } = useI18n();
-
-const toggleLocales = () => {
-  const locales = availableLocales;
-  locale.value =
-    locales[(locales.indexOf(locale.value) + 1) % locales.length];
-};
-
-const { toggleDark } = useTheme();
-
-const show = ref(false);
-
-setTimeout(() => {
-  show.value = true;
-}, 1000);
-
+    return {
+      form,
+      formValues,
+      onFormChange,
+      onFormSubmit,
+    };
+  },
+});
 </script>
+
 <template>
   <div class="container max-w-3xl mx-auto mt-60">
-    <div class="h-60 mb-8">
-      <transition
-        enter-active-class="transition ease-out duration-1000 transform"
-        enter-from-class="-translate-x-100 opacity-0"
-        enter-to-class="translate-x-0 opacity-100"
-        leave-active-class="transition ease-in duration-1000 transform"
-        leave-from-class="opacity-100"
-        leave-to-class="opacity-0"
-      >
-        <img
-          v-if="show"
-          alt="Vitesome logo"
-          class="w-52 mx-auto mb-12"
-          :src="'imagotype.svg'"
-        />
-      </transition>
-    </div>
-
-    <HelloWorld :msg="t('hello') + ' 👋 ' + t('welcome')" />
-
-    <footer class="text-center">
-      <ul class="flex justify-between w-1/3 mx-auto mb-8">
-        <li class="cursor-pointer text-2xl">
-          <a
-            href="#"
-            @click="toggleLocales"
-            class="footer-link text-cyan-700 hover:text-cyan-500"
-            :title="t('toggle_language')"
-          >
-            <i class="i-ph-translate-bold" />
-          </a>
-        </li>
-        <li class="cursor-pointer text-2xl">
-          <a
-            href="#"
-            @click="toggleDark"
-            class="text-cyan-700 hover:text-cyan-500"
-            :title="t('toggle_theme')"
-          >
-            <i i="ph-sun dark:ph-moon" />
-          </a>
-        </li>
-        <li class="cursor-pointer text-2xl">
-          <a
-            href="https://github.com/alvarosabu"
-            rel="noreferrer"
-            target="_blank"
-            class="footer-link text-cyan-700 hover:text-cyan-500"
-            title="Github repo"
-          >
-            <i class="i-ph-github-logo" />
-          </a>
-        </li>
-      </ul>
-
-      <span class="text-xs"
-        >{{ t('made_by') }}
-        <a
-          class="footer-link text-cyan-400 hover:text-cyan-500"
-          href="https://github.com/alvarosabu/vitesome"
-          rel="noreferrer"
-          target="_blank"
-          >Alvaro Saburido</a
-        ></span
-      >
-    </footer>
+    <dynamic-form
+      :form="form"
+      @submitted="onFormSubmit"
+      @change="onFormChange"
+    />
+    <button
+      class="bg-teal-400 text-light-50 px-2.5 py-1.5 rounded font-bold text-xs"
+      submit="true"
+      :form="form.id"
+    >
+      Submit
+    </button>
+    <pre>{{ formValues }}</pre>
   </div>
 </template>
-
-<style>
-a,
-.footer-link {
-  @apply transition-all ease-out duration-100;
-}
-
-.footer-link {
-  opacity: 0.8;
-}
-</style>

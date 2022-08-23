@@ -1,0 +1,5 @@
+@import '/node_modules/@asigloo/vue-dynamic-forms/src/styles/themes/default.scss';
+
+body {
+  @apply text-gray-700 dark:bg-gray-800 dark:text-gray-200;
+}
